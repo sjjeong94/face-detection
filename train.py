@@ -115,7 +115,7 @@ def train(
         epoch_begin = checkpoint['epoch']
 
     T_train = transforms.Compose([
-        transforms.Resize((320, 320)),
+        transforms.Resize((512, 512)),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(
@@ -123,7 +123,7 @@ def train(
             std=[0.229, 0.224, 0.225])])
 
     T_val = transforms.Compose([
-        transforms.Resize((320, 320)),
+        transforms.Resize((512, 512)),
         transforms.ToTensor(),
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
@@ -217,6 +217,7 @@ def train(
 if __name__ == '__main__':
     train(
         logs_root='logs/widerface/fcos',
-        epochs=50,
+        epochs=110,
         learning_rate=0.0003,
+        weight_decay=0.0001,
     )

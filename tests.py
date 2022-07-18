@@ -90,7 +90,7 @@ def test_encode_decode():
         transforms.RandomHorizontalFlip(),
     ])
 
-    dataset = datasets.WIDERFace('./data', 'val', T_compose)
+    dataset = datasets.WIDERFace('./data', 'train', T_compose)
 
     idx = 0
 
@@ -102,6 +102,15 @@ def test_encode_decode():
         image2 = image1.copy()
 
         encoded = transforms.label_encode(image, target)
+        decoded = transforms.label_decode(encoded)
+
+        for bbox in target['bbox']:
+            cv2.rectangle(image1, bbox.astype(int), (0, 255, 0), 1)
+            cv2.rectangle(image2, bbox.astype(int), (0, 255, 0), 1)
+
+        for t in decoded:
+            bbox = list(map(int, t['bbox']))
+            cv2.rectangle(image2, bbox, (255, 0, 255), 1)
 
         reg = visualize_gt(encoded[:4], scale=10)
         cv2.imshow('gt_reg', reg)

@@ -41,13 +41,13 @@ class Module:
 
 
 def visualize_eval(
-    model_path='./logs/widerface/fcos/models/model_050.pt',
-    size=(320, 320),
+    model_path='./logs/widerface/fcos/models/model_110.pt',
+    size=(512, 512),
 ):
     module = Module(model_path)
 
     dataset = datasets.WIDERFace(
-        './data', 'val', transforms.Resize((320, 320)))
+        './data', 'val', transforms.Resize(size))
 
     idx = 0
     while True:
@@ -62,9 +62,11 @@ def visualize_eval(
 
         decoded = transforms.label_decode(out)
 
+        for bbox in label['bbox']:
+            cv2.rectangle(image, bbox.astype(int), (0, 255, 0), 1)
         for t in decoded:
             bbox = list(map(int, t['bbox']))
-            cv2.rectangle(image, bbox, (0, 255, 0), 1)
+            cv2.rectangle(image, bbox, (255, 0, 255), 1)
 
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         cv2.imshow('image', image)

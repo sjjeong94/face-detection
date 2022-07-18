@@ -18,7 +18,7 @@ class WIDERFace(torch.utils.data.Dataset):
         image, label = self.dataset[idx]
         image = np.asarray(image)
         label = copy.deepcopy(label)
-        label['bbox'] = label['bbox'].float()
+        label['bbox'] = label['bbox'].float().numpy()
         if self.transform:
             image, label = self.transform(image, label)
         return image, label

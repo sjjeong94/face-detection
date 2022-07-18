@@ -67,7 +67,7 @@ class Normalize:
         return image, target
 
 
-def label_encode(image, target, num_classes=91, R=4):
+def label_encode(image, target, num_classes=1, R=4):
     H, W, C = image.shape
     h, w = H // R, W // R
 
@@ -76,16 +76,18 @@ def label_encode(image, target, num_classes=91, R=4):
 
     for bbox in target['bbox']:
         bx, by, bw, bh = bbox / R
-        l, t, r, b = int(bx), int(by), int(bx+bw), int(by+bh)
+        l, t, r, b = bx, by, bx+bw, by+bh
+        y0, y1, x0, x1 = int(t), int(b)+1, int(l), int(r)+1
 
-        for y in range(t, b):
-            for x in range(l, r):
+        for y in range(y0, y1):
+            for x in range(x0, x1):
                 if x >= 0 and x < w and y >= 0 and y < h:
-                    l_ = x - l
-                    t_ = y - t
-                    r_ = r - x
-                    b_ = b - y
-                    v = np.sqrt(min(l_, r_)/max(l_, r_)
+                    l_ = max(x - l, 1e-6)
+                    t_ = max(y - t, 1e-6)
+                    r_ = max(r - x, 1e-6)
+                    b_ = max(b - y, 1e-6)
+
+                    v = math.sqrt(min(l_, r_)/max(l_, r_)
                                 * min(t_, b_)/max(t_, b_))
                     if gt_k[0, y, x] < v:
                         gt_k[0, y, x] = v
