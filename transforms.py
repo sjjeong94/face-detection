@@ -43,6 +43,46 @@ class Resize:
         bbox[:, 3] *= hs
         return image, target
 
+class RandomResize:
+    def __init__(self, min_size, max_size=None):
+        self.min_size = min_size
+        if max_size is None:
+            max_size = min_size
+        self.max_size = max_size
+    
+    def __call__(self, image, target):
+        h, w, c = image.shape
+        s = random.randint(self.min_size, self.max_size)
+        if h < w:
+            wr, hr = round(s*w/h), s 
+        else:
+            wr, hr = s, round(s*h/w)
+        size = (wr, hr)
+        ws, hs = wr/w, hr/h 
+        image = cv2.resize(image, size, interpolation=cv2.INTER_LANCZOS4)
+        bbox = target['bbox']
+        bbox[:, 0] *= ws
+        bbox[:, 1] *= hs
+        bbox[:, 2] *= ws
+        bbox[:, 3] *= hs
+        return image, target
+
+class RandomCrop:
+    def __init__(self, size):
+        self.size = size
+    
+    def __call__(self, image, target):
+        h, w, c = image.shape
+        xs = random.randint(0, w - self.size)
+        ys = random.randint(0, h - self.size)
+        xe = xs + self.size
+        ye = ys + self.size
+        image = image[ys:ye, xs:xe]
+        bbox = target['bbox']
+        bbox[:, 0] -= xs
+        bbox[:, 1] -= ys
+        return image, target
+
 
 class ToTensor:
     def __init__(self):

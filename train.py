@@ -72,8 +72,9 @@ class Loss(nn.Module):
 
 def train(
     logs_root,
-    learning_rate=0.0003,
-    weight_decay=0,
+    learning_rate=0.01,
+    momentum=0.9,
+    weight_decay=0.0001,
     batch_size=8,
     epochs=5,
     num_workers=2,
@@ -99,10 +100,12 @@ def train(
     net = models.Detector()
     net = net.to(device)
 
-    optimizer = torch.optim.AdamW(
+    optimizer = torch.optim.SGD(
         net.parameters(),
         lr=learning_rate,
-        weight_decay=weight_decay)
+        momentum=momentum,
+        weight_decay=weight_decay,
+    )
 
     epoch_begin = 0
     model_files = sorted(os.listdir(model_path))
@@ -115,7 +118,8 @@ def train(
         epoch_begin = checkpoint['epoch']
 
     T_train = transforms.Compose([
-        transforms.Resize((512, 512)),
+        transforms.RandomResize(512, 640),
+        transforms.RandomCrop(512),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(
@@ -216,8 +220,7 @@ def train(
 
 if __name__ == '__main__':
     train(
-        logs_root='logs/widerface/fcos',
-        epochs=110,
-        learning_rate=0.0003,
-        weight_decay=0.0001,
+        logs_root='logs/widerface/fcos2',
+        learning_rate=0.001,
+        epochs=50,
     )

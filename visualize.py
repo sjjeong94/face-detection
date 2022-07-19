@@ -41,7 +41,7 @@ class Module:
 
 
 def visualize_eval(
-    model_path='./logs/widerface/fcos/models/model_110.pt',
+    model_path='./logs/widerface/fcos2/models/model_050.pt',
     size=(512, 512),
 ):
     module = Module(model_path)

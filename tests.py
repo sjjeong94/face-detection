@@ -86,7 +86,8 @@ def visualize_gt(gt, scale=255):
 
 def test_encode_decode():
     T_compose = transforms.Compose([
-        transforms.Resize((512, 512)),
+        transforms.RandomResize(512, 640),
+        transforms.RandomCrop(512),
         transforms.RandomHorizontalFlip(),
     ])
 
