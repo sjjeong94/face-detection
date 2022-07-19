@@ -22,7 +22,7 @@ def set_seed(seed):
         torch.backends.cudnn.deterministic = True
 
 
-class IOULoss(nn.Module):
+class GIOULoss(nn.Module):
     def __init__(self):
         super().__init__()
 
@@ -39,10 +39,18 @@ class IOULoss(nn.Module):
 
         iw = torch.minimum(o_l, g_l) + torch.minimum(o_r, g_r)
         ih = torch.minimum(o_t, g_t) + torch.minimum(o_b, g_b)
+
         inter = iw * ih
         union = o_a + g_a - inter
         iou = inter / (union + 1e-9)
-        loss = -torch.log(iou)
+
+        cw = torch.maximum(o_l, g_l) + torch.maximum(o_r, g_r)
+        ch = torch.maximum(o_t, g_t) + torch.maximum(o_b, g_b)
+        c_area = cw * ch
+
+        giou = iou - (c_area - union) / (c_area + 1e-9)
+        loss = 1 - giou
+
         return loss.mean()
 
 
@@ -50,7 +58,7 @@ class Loss(nn.Module):
     def __init__(self):
         super().__init__()
         self.bce = nn.BCEWithLogitsLoss()
-        self.iou = IOULoss()
+        self.iou = GIOULoss()
 
     def forward(self, out, gt):
         # centerness
@@ -75,7 +83,7 @@ def train(
     learning_rate=0.01,
     momentum=0.9,
     weight_decay=0.0001,
-    batch_size=8,
+    batch_size=16,
     epochs=5,
     num_workers=2,
 ):
@@ -118,8 +126,8 @@ def train(
         epoch_begin = checkpoint['epoch']
 
     T_train = transforms.Compose([
-        transforms.RandomResize(512, 640),
-        transforms.RandomCrop(512),
+        transforms.RandomResize(320),
+        transforms.RandomCrop(320),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(
@@ -127,7 +135,7 @@ def train(
             std=[0.229, 0.224, 0.225])])
 
     T_val = transforms.Compose([
-        transforms.Resize((512, 512)),
+        transforms.Resize((320, 320)),
         transforms.ToTensor(),
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
@@ -220,7 +228,7 @@ def train(
 
 if __name__ == '__main__':
     train(
-        logs_root='logs/widerface/fcos2',
+        logs_root='logs/widerface/fcos3',
         learning_rate=0.001,
-        epochs=50,
+        epochs=25,
     )
